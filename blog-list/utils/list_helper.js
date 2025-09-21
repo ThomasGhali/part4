@@ -43,11 +43,11 @@ const mostBlogs = (blogs) => {
   const categorized = categorizeBlogs(blogs)
 
   return categorized.reduce((accum, curr) => {
-    return curr > accum
+    return curr.blogs > accum.blogs
       ? curr
       : accum
 
-  }, blogs[0])
+  }, categorized[0])
 }
 
 module.exports = { dummy, totalLikes, favouriteBlog, mostBlogs }

@@ -125,7 +125,7 @@ describe('author with most blogs', () => {
   })
 
   test('of list of blogs', () => {
-    const result = listHelper.mostBlogs([])
+    const result = listHelper.mostBlogs(listWithMultipleBlogs)
 
     assert.deepStrictEqual(result, { author: 'Robert C. Martin', blogs: 3 })
   })
