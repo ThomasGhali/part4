@@ -23,7 +23,7 @@ const favouriteBlog = (blogs) => {
 }
 
 // categorize blogs according to auther and his blogs number
-const categorizeBlogs = (blogs) => {
+const categorizeBlogsNum = (blogs) => {
   return blogs.reduce((accum, curr) => {
     const hasAuthor = accum.find(blog => blog.author === curr.author)
 
@@ -40,7 +40,7 @@ const categorizeBlogs = (blogs) => {
 const mostBlogs = (blogs) => {
   if (blogs.length === 0) return null
 
-  const categorized = categorizeBlogs(blogs)
+  const categorized = categorizeBlogsNum(blogs)
 
   return categorized.reduce((accum, curr) => {
     return curr.blogs > accum.blogs
@@ -50,4 +50,32 @@ const mostBlogs = (blogs) => {
   }, categorized[0])
 }
 
-module.exports = { dummy, totalLikes, favouriteBlog, mostBlogs }
+const categorizeBlogsLikes = (blogs) => {
+  return blogs.reduce((accum, curr) => {
+    const hasAuthor = accum.find(blog => blog.author === curr.author)
+
+    if (hasAuthor) {
+      hasAuthor.likes += curr.likes
+    } else {
+      accum.push({ author: curr.author, likes: curr.likes })
+    }
+
+    return accum
+  }, [])
+}
+
+const mostLikes = (blogs) => {
+  if (blogs.length === 0) return null
+
+  const categorized = categorizeBlogsLikes(blogs)
+
+  return categorized.reduce((accum, curr) => {
+    return curr.likes > accum.likes
+      ? curr
+      : accum
+
+  }, categorized[0])
+
+}
+
+module.exports = { dummy, totalLikes, favouriteBlog, mostBlogs, mostLikes }
