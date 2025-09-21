@@ -1,0 +1,9 @@
+POST http://localhost:3001/
+Content-Type: application/json
+
+{ 
+  "title": "Tom blog title",
+  "author": "Thomas Ghali",
+  "url": "just a url",
+  "likes": 45
+}
