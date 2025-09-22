@@ -4,7 +4,7 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
-const { initialBlogs } = require('./test_helper')
+const { initialBlogs, blogsInDb } = require('./test_helper')
 
 const api = supertest(app)
 
@@ -29,6 +29,13 @@ describe.only('blogs are returned', () => {
     const response = await api.get('/api/blogs')
 
     assert.strictEqual(response.body.length, 3)
+  })
+
+  test('with "id" keys not "_id"', async () => {
+    const blogs = await blogsInDb()
+
+    assert(blogs[0].id)
+    assert(!blogs[0]._id)
   })
 })
 
