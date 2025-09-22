@@ -39,6 +39,26 @@ describe.only('blogs are returned', () => {
   })
 })
 
+describe('blog is added', () => {
+  test('if content is valid', async () => {
+    const newBlogObj = {
+      'title': 'A visit to Toronto',
+      'author': 'Thomas Ghali',
+      'url': 'www.demo-url.com',
+      'likes': 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlogObj)
+      .expect(201)
+
+    const endBlogsInDb = await blogsInDb()
+
+    assert(endBlogsInDb.find(b => b.title === 'A visit to Toronto'))
+  })
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
