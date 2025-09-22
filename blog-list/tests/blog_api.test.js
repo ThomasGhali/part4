@@ -57,6 +57,25 @@ describe('blog is added', () => {
 
     assert(endBlogsInDb.find(b => b.title === 'A visit to Toronto'))
   })
+
+  test('with it\'s "likes" default to 0 if not provided', async () => {
+    const newBlogObj = {
+      'title': 'A visit to Toronto',
+      'author': 'Thomas Ghali',
+      'url': 'www.demo-url.com'
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlogObj)
+      .expect(201)
+
+    const endBlogsInDb = await blogsInDb()
+
+    const newBlogInDb = endBlogsInDb.find(b => b.title === 'A visit to Toronto')
+
+    assert.strictEqual(newBlogInDb.likes, 0)
+  })
 })
 
 after(async () => {
