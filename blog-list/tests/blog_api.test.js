@@ -76,6 +76,32 @@ describe('blog is added', () => {
 
     assert.strictEqual(newBlogInDb.likes, 0)
   })
+
+  test('unless its title is missing: 400 bad request', async () => {
+    const newBlogObj = {
+      'author': 'Thomas Ghali',
+      'url': 'www.demo-url.com',
+      'likes': 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlogObj)
+      .expect(400)
+  })
+
+  test('unless its url is missing: 400 bad request', async () => {
+    const newBlogObj = {
+      'title': 'A visit to Toronto',
+      'author': 'Thomas Ghali',
+      'likes': 3
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlogObj)
+      .expect(400)
+  })
 })
 
 after(async () => {

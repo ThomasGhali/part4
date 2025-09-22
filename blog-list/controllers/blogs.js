@@ -10,6 +10,10 @@ notesRouter.get('/', async (request, response) => {
 notesRouter.post('/', async (request, response) => {
   const blog = new Blog(request.body)
 
+  if (blog.title === undefined || blog.url === undefined) {
+    return response.status(400).json({ error: 'title & url required' })
+  }
+
   if (blog.likes === undefined) {
     blog.likes = 0
   }
