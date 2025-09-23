@@ -51,9 +51,9 @@ describe('when there are some initially saved blogs', () => {
         .send(newBlogObj)
         .expect(201)
 
-      const endBlogsInDb = await blogsInDb()
+      const blogsAtEnd = await blogsInDb()
 
-      assert(endBlogsInDb.find(b => b.title === 'A visit to Toronto'))
+      assert(blogsAtEnd.find(b => b.title === 'A visit to Toronto'))
     })
 
     test('with it\'s "likes" default to 0 if not provided', async () => {
@@ -68,9 +68,9 @@ describe('when there are some initially saved blogs', () => {
         .send(newBlogObj)
         .expect(201)
 
-      const endBlogsInDb = await blogsInDb()
+      const blogsAtEnd = await blogsInDb()
 
-      const newBlogInDb = endBlogsInDb.find(b => b.title === 'A visit to Toronto')
+      const newBlogInDb = blogsAtEnd.find(b => b.title === 'A visit to Toronto')
 
       assert.strictEqual(newBlogInDb.likes, 0)
     })
@@ -116,7 +116,45 @@ describe('when there are some initially saved blogs', () => {
       assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
       assert(!blogsAtEnd.find(b => b.title === blogToDelete.title))
     })
+  })
 
+  describe('updating of a blog', () => {
+    let blogToUpdate
+    let blogId
+    let newBlogObj
+
+    beforeEach(async () => {
+      const blogsAtStart = await blogsInDb()
+      blogToUpdate = blogsAtStart[0]
+      blogId = blogToUpdate.id
+      newBlogObj = { ...blogToUpdate, likes: 23 }
+    })
+
+    test('fails with status 404 if blog with given id not in database', async () => {
+      const wrongId = '64d272853a6cfd7febda70d1'
+
+      await api
+        .put(`/api/blogs/${wrongId}`)
+        .send(newBlogObj)
+        .expect(404)
+
+      const blogsAtEnd = await blogsInDb()
+      const blogToUpdateEnd = blogsAtEnd.find(b => b.id === blogId)
+
+      assert.strictEqual(blogToUpdateEnd.likes, blogToUpdate.likes)
+    })
+
+    test('succeeds to update with valid id', async () => {
+      await api
+        .put(`/api/blogs/${blogId}`)
+        .send(newBlogObj)
+        .expect(200)
+
+      const blogsAtEnd = await blogsInDb()
+      const blogToUpdateEnd = blogsAtEnd.find(b => b.id === blogId)
+
+      assert.strictEqual(newBlogObj.likes, blogToUpdateEnd.likes)
+    })
   })
 })
 
