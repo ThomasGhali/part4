@@ -17,5 +17,5 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRob
   "title": "brand new title",
   "author": "shalaboka",
   "url": "url placeholder",
-  "like": 21
+  "likes": 9991
 }
