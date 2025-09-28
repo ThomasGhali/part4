@@ -13,12 +13,6 @@ const initialBlogs = [
     'author': 'demo author 2',
     'url': 'demo url 2',
     'likes': 10
-  },
-  {
-    'title': 'demo title 3',
-    'author': 'demo author 3',
-    'url': 'demo url 3',
-    'likes': 15
   }
 ]
 
@@ -32,5 +26,20 @@ const usersInDb = async () => {
   return users.map(user => user.toJSON())
 }
 
+const createUser = async (api, userData) => {
+  const response = await api
+    .post('/api/users')
+    .send(userData)
 
-module.exports = { blogsInDb, initialBlogs, usersInDb }
+  return response.body
+}
+
+const loginUser = async (api, userData) => {
+  const response = await api
+    .post('/api/login')
+    .send(userData)
+
+  return response.body
+}
+
+module.exports = { blogsInDb, initialBlogs, usersInDb, createUser, loginUser }

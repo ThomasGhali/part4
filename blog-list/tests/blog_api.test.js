@@ -4,15 +4,35 @@ const mongoose = require('mongoose')
 const supertest = require('supertest')
 const app = require('../app')
 const Blog = require('../models/blog')
-const { initialBlogs, blogsInDb } = require('./test_helper')
+const User = require('../models/user')
+const { initialBlogs, blogsInDb, createUser, loginUser } = require('./test_helper')
 
 const api = supertest(app)
 
 
 describe('when there are some initially saved blogs', () => {
+  let token = null
+  // clear users & blogs, create new user & blog
   beforeEach(async () => {
+    await User.deleteMany({})
+    const newUser = {
+      username: 'hedgehog123',
+      name: 'Sonic',
+      password: 'passcode123'
+    }
+
+    // create user and save its token
+    await createUser(api, newUser)
+    const login = await loginUser(api, { username: newUser.username, password: newUser.password })
+    token = login.token
+
     await Blog.deleteMany({})
-    await Blog.insertMany(initialBlogs)
+    // make new blog with token
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `Bearer ${token}`)
+      .send(initialBlogs[0])
+      .expect(201)
   })
 
   describe('blogs are returned', () => {
@@ -26,7 +46,7 @@ describe('when there are some initially saved blogs', () => {
     test('with right amount', async () => {
       const response = await api.get('/api/blogs')
 
-      assert.strictEqual(response.body.length, 3)
+      assert.strictEqual(response.body.length, 1)
     })
 
     test('with "id" keys not "_id"', async () => {
@@ -48,6 +68,7 @@ describe('when there are some initially saved blogs', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlogObj)
         .expect(201)
 
@@ -65,6 +86,7 @@ describe('when there are some initially saved blogs', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlogObj)
         .expect(201)
 
@@ -84,6 +106,7 @@ describe('when there are some initially saved blogs', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlogObj)
         .expect(400)
     })
@@ -97,8 +120,25 @@ describe('when there are some initially saved blogs', () => {
 
       await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${token}`)
         .send(newBlogObj)
         .expect(400)
+    })
+
+    test('unless token not provided: 401 unauthorized', async () => {
+      const newBlogObj = {
+        'title': 'A visit to Toronto',
+        'author': 'Thomas Ghali',
+        'url': 'www.demo-url.com',
+        'likes': 3
+      }
+
+      const response = await api
+        .post('/api/blogs')
+        .send(newBlogObj)
+        .expect(401)
+
+      assert.strictEqual(response.body.error, 'invalid token or user not found')
     })
   })
 
@@ -109,12 +149,28 @@ describe('when there are some initially saved blogs', () => {
 
       await api
         .delete(`/api/blogs/${blogToDelete.id}`)
+        .set('Authorization', `Bearer ${token}`)
         .expect(204)
 
       const blogsAtEnd = await blogsInDb()
 
       assert.strictEqual(blogsAtEnd.length, blogsAtStart.length - 1)
       assert(!blogsAtEnd.find(b => b.title === blogToDelete.title))
+    })
+
+    test('fails with 401 if token not provided', async () => {
+      const blogsAtStart = await blogsInDb()
+      const blogToDelete = blogsAtStart[0]
+
+      const response = await api
+        .delete(`/api/blogs/${blogToDelete.id}`)
+        .expect(401)
+
+      const blogsAtEnd = await blogsInDb()
+
+      assert.strictEqual(blogsAtEnd.length, blogsAtStart.length)
+      assert(blogsAtEnd.find(b => b.title === blogToDelete.title))
+      assert.strictEqual(response.body.error, 'invalid token')
     })
   })
 
@@ -131,7 +187,7 @@ describe('when there are some initially saved blogs', () => {
     })
 
     test('fails with status 404 if blog with given id not in database', async () => {
-      const wrongId = '64d272853a6cfd7febda70d1'
+      const wrongId = new mongoose.Types.ObjectId().toString()
 
       await api
         .put(`/api/blogs/${wrongId}`)
